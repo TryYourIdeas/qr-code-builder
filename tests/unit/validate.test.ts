@@ -11,6 +11,21 @@ describe('validateInput', () => {
     expect(validateInput({ type: 'url', url: 'exa mple.com' })).toHaveProperty('url')
     expect(validateInput({ type: 'url', url: 'notaurl' })).toHaveProperty('url')
   })
+  it('rejects non-http(s) schemes so unsafe or misleading links are never encoded', () => {
+    expect(validateInput({ type: 'url', url: 'javascript://example.com/%0aalert(1)' })).toHaveProperty('url')
+    expect(validateInput({ type: 'url', url: 'data://a.b' })).toHaveProperty('url')
+    expect(validateInput({ type: 'url', url: 'file://a.b/x' })).toHaveProperty('url')
+    expect(validateInput({ type: 'url', url: 'ftp://example.com' })).toHaveProperty('url')
+  })
+  it('points mailto: and tel: input to the right tab', () => {
+    expect(validateInput({ type: 'url', url: 'mailto:bob@x.com' }).url).toMatch(/Email tab/)
+    expect(validateInput({ type: 'url', url: 'tel:+15550100' }).url).toMatch(/Phone tab/)
+  })
+  it('still accepts http, https and host:port input', () => {
+    expect(validateInput({ type: 'url', url: 'HTTP://example.com' })).toEqual({})
+    expect(validateInput({ type: 'url', url: 'localhost:3000' })).toEqual({})
+    expect(validateInput({ type: 'url', url: 'example.com:8080/a' })).toEqual({})
+  })
   it('accepts formatted phone numbers', () => {
     expect(validateInput({ type: 'phone', phone: '+1 (555) 010-9999' })).toEqual({})
   })

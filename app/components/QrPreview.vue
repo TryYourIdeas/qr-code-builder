@@ -13,6 +13,8 @@ let Ctor: typeof QRCodeStyling | null = null
 let qr: QRCodeStyling | null = null
 
 const TOO_LONG = 'This content is too long to fit in a QR code. Shorten it or lower the error-correction level.'
+// With a logo the error-correction level is locked to High, so that control cannot help.
+const TOO_LONG_WITH_LOGO = 'This content is too long to fit in a QR code with a logo. Remove the logo or shorten the content.'
 
 function render() {
   if (!Ctor || !container.value || !props.options) return
@@ -27,7 +29,7 @@ function render() {
     error.value = null
   } catch (e) {
     console.error('[qr-code-builder] render failed', { length: props.options.data?.length }, e)
-    error.value = TOO_LONG
+    error.value = props.options.image ? TOO_LONG_WITH_LOGO : TOO_LONG
   }
   emit('error', error.value)
 }

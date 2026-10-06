@@ -37,6 +37,13 @@ describe('QrPreview', () => {
     await waitFor(() => expect(emitted().error?.at(-1)).toEqual([expect.stringMatching(/too long/i)]))
   })
 
+  it('when a logo is set, tells the user to remove the logo instead of a disabled control', async () => {
+    render(QrPreview, { props: { options: { ...opts('x'.repeat(5000)), image: 'data:image/png;base64,AAAA' } } })
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(/remove the logo/i)
+    expect(alert).not.toHaveTextContent(/error-correction/i)
+  })
+
   it('recovers when the content becomes valid again', async () => {
     const { rerender } = render(QrPreview, { props: { options: opts('x'.repeat(5000)) } })
     await screen.findByRole('alert')
