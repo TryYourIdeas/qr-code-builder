@@ -58,22 +58,21 @@ const labelCls = 'block text-sm font-medium text-slate-800'
 
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <label for="style-dots" :class="labelCls">Dot style</label>
-        <select id="style-dots" v-model="style.dotStyle" :class="field">
+        <label for="style-dots" :class="labelCls">Dot shape</label>
+        <select id="style-dots" v-model="style.dotShape" :class="field">
           <option value="square">Square</option>
           <option value="dots">Dots</option>
           <option value="rounded">Rounded</option>
-          <option value="extra-rounded">Extra rounded</option>
-          <option value="classy">Classy</option>
-          <option value="classy-rounded">Classy rounded</option>
+          <option v-if="style.customDot" value="custom">Custom SVG</option>
         </select>
       </div>
       <div>
-        <label for="style-corners" :class="labelCls">Corner style</label>
-        <select id="style-corners" v-model="style.cornerStyle" :class="field">
+        <label for="style-eyes" :class="labelCls">Eye shape</label>
+        <select id="style-eyes" v-model="style.eyeShape" :class="field">
           <option value="square">Square</option>
           <option value="rounded">Rounded</option>
           <option value="dot">Dot</option>
+          <option v-if="style.customEye" value="custom">Custom SVG</option>
         </select>
       </div>
     </div>
