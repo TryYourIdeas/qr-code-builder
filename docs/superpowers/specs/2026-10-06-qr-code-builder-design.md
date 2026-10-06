@@ -37,12 +37,13 @@ app/
   pages/index.vue            single page: form + live preview
   components/
     ContentTypeTabs.vue
-    forms/{Url,Phone,Email,Sms,Text,Wifi,Vcard}Form.vue
+    ContentForm.vue          one data-driven form, fields defined in utils/fields.ts
     StylePanel.vue
     QrPreview.vue            client-only wrapper around qr-code-styling
     DownloadButtons.vue
   utils/payload.ts           buildPayload(type, fields) -> string (pure)
   utils/validate.ts          validators (pure)
+  utils/fields.ts            content types and per-type field definitions
   composables/useQrStyle.ts  style state, contrast check, qr-code-styling instance
 ```
 
