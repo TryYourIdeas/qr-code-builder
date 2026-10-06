@@ -12,7 +12,7 @@ export function dotMarkup(shape: DotShape, fill: string): string {
     case 'square':
       return `<rect width="1" height="1" fill="${fill}"/>`
     case 'dots':
-      return `<circle cx="0.5" cy="0.5" r="0.45" fill="${fill}"/>`
+      return `<circle cx="0.5" cy="0.5" r="0.5" fill="${fill}"/>`
     case 'rounded':
       return `<rect width="1" height="1" rx="0.3" fill="${fill}"/>`
   }

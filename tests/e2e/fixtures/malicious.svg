@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 7 7" onload="alert('xss')">
+  <script>alert('xss')</script>
+  <rect x="0.5" y="0.5" width="6" height="6" fill="none" stroke="#000" onclick="alert('xss')"/>
+  <image href="http://evil.example/track.png" width="1" height="1"/>
+  <foreignObject width="7" height="7"><div xmlns="http://www.w3.org/1999/xhtml">hi</div></foreignObject>
+</svg>
