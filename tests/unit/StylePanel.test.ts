@@ -4,6 +4,9 @@ import userEvent from '@testing-library/user-event'
 import StylePanel from '~/components/StylePanel.vue'
 import { defaultStyle } from '~/utils/qrOptions'
 
+const SVG = (body: string) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 7 7">${body}</svg>`
+const svgFile = (body: string, name = 'e.svg') => new File([body], name, { type: 'image/svg+xml' })
+
 function setup(warning: string | null = null) {
   const style = reactive(defaultStyle())
   render(StylePanel, { props: { modelValue: style, warning } })
@@ -50,5 +53,45 @@ describe('StylePanel', () => {
     expect(screen.getByLabelText('Error correction')).toBeDisabled()
     await user().click(screen.getByRole('button', { name: 'Remove logo' }))
     expect(style.logo).toBeNull()
+  })
+  it('uploads a custom eye, switches to it, shows a thumbnail, and restores the previous shape on remove', async () => {
+    const style = setup()
+    await user().selectOptions(screen.getByLabelText('Eye shape'), 'rounded')
+    await user().upload(screen.getByLabelText('Custom eye (SVG)'), svgFile(SVG('<rect width="7" height="7" fill="#123456"/>')))
+    await waitFor(() => expect(style.eyeShape).toBe('custom'))
+    expect(style.customEye?.inner).toContain('#123456')
+    expect(screen.getByRole('img', { name: 'Custom eye preview' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'Custom SVG' })).toBeInTheDocument()
+    await user().click(screen.getByRole('button', { name: 'Remove custom eye' }))
+    expect(style.customEye).toBeNull()
+    expect(style.eyeShape).toBe('rounded')
+  })
+
+  it('uploads a custom dot independently of the eye', async () => {
+    const style = setup()
+    await user().upload(screen.getByLabelText('Custom dot (SVG)'), svgFile(SVG('<circle cx="3" cy="3" r="3"/>'), 'd.svg'))
+    await waitFor(() => expect(style.dotShape).toBe('custom'))
+    expect(style.eyeShape).toBe('square')
+    expect(style.customEye).toBeNull()
+  })
+
+  it.each([
+    ['a non-svg file', new File(['hi'], 'notes.txt', { type: 'text/plain' }), /choose an SVG/i],
+    ['a malformed svg', svgFile('<svg><rect></svg>'), /not a valid svg/i],
+    ['a non-square svg', svgFile('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 4"><rect width="10" height="4"/></svg>'), /square/i],
+  ])('rejects %s with a visible message and keeps the previous shape', async (_label, file, message) => {
+    const style = setup()
+    await user().upload(screen.getByLabelText('Custom eye (SVG)'), file)
+    expect(await screen.findByRole('alert')).toHaveTextContent(message)
+    expect(style.customEye).toBeNull()
+    expect(style.eyeShape).toBe('square')
+  })
+
+  it('neutralizes unsafe content in an accepted upload', async () => {
+    const style = setup()
+    const unsafe = SVG('<script>alert(1)</script><rect onclick="x()" width="7" height="7"/><image href="http://evil.example/x.png"/>')
+    await user().upload(screen.getByLabelText('Custom dot (SVG)'), svgFile(unsafe))
+    await waitFor(() => expect(style.customDot).not.toBeNull())
+    expect(style.customDot!.inner).not.toMatch(/script|onclick|evil\.example/i)
   })
 })
