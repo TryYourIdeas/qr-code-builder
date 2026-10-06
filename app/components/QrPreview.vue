@@ -23,11 +23,11 @@ const previewSrc = computed(() =>
   svg.value ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.value)}` : null,
 )
 
-function scheduleScanCheck(markup: string, text: string) {
+function scheduleScanCheck(markup: string, text: string, px: number) {
   const run = scanRun
   scanTimer = setTimeout(async () => {
     try {
-      const ok = await scansBack(markup, text)
+      const ok = await scansBack(markup, text, px)
       debugLog('scan check', { ok })
       if (run === scanRun) emit('scan', ok)
     } catch (e) {
@@ -47,9 +47,13 @@ function update() {
     emit('error', null)
     return
   }
+  let scanPx = 400
   try {
     const level = props.qrStyle.logo ? 'H' : props.qrStyle.errorLevel
-    svg.value = renderSvg(buildMatrix(props.text, level), props.qrStyle)
+    const matrix = buildMatrix(props.text, level)
+    // keep at least ~6 px per module (including the quiet zone) so dense codes can still be decoded
+    scanPx = Math.min(1600, Math.max(400, (matrix.size + 8) * 6))
+    svg.value = renderSvg(matrix, props.qrStyle)
     debugLog('qr rendered', { length: props.text.length, level })
   } catch (e) {
     console.error('[qr-code-builder] render failed', { length: props.text.length }, e)
@@ -59,7 +63,7 @@ function update() {
         : 'Could not render the QR code.'
   }
   emit('error', error.value)
-  if (svg.value) scheduleScanCheck(svg.value, props.text)
+  if (svg.value) scheduleScanCheck(svg.value, props.text, scanPx)
 }
 
 watch(() => [props.text, props.qrStyle], update, { deep: true, immediate: true })

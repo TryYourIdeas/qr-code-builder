@@ -1,4 +1,4 @@
-import { MAX_SVG_BYTES, sanitizeSvg, type SanitizeResult } from '~/utils/qr/sanitizeSvg'
+import { MAX_SVG_BYTES, sanitizeSvg, type SanitizeOptions, type SanitizeResult } from '~/utils/qr/sanitizeSvg'
 
 export function readFileText(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -9,13 +9,13 @@ export function readFileText(file: File): Promise<string> {
   })
 }
 
-export async function loadSvgUpload(file: File, idPrefix: string): Promise<SanitizeResult> {
+export async function loadSvgUpload(file: File, idPrefix: string, options: SanitizeOptions = {}): Promise<SanitizeResult> {
   if (file.type !== 'image/svg+xml' && !/\.svg$/i.test(file.name)) {
     return { ok: false, error: 'Please choose an SVG file.' }
   }
   if (file.size > MAX_SVG_BYTES) return { ok: false, error: 'SVG is larger than 200 KB.' }
   try {
-    return sanitizeSvg(await readFileText(file), idPrefix)
+    return sanitizeSvg(await readFileText(file), idPrefix, options)
   } catch (e) {
     console.error('[qr-code-builder] svg read failed', { name: file.name, size: file.size, type: file.type }, e)
     return { ok: false, error: 'Could not read the SVG file.' }

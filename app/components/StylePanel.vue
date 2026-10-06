@@ -41,6 +41,8 @@ function removeLogo() {
   logoError.value = null
 }
 
+// The dot tile is repeated for every dark module (thousands), so keep it small.
+const MAX_DOT_NODES = 200
 const dotError = ref<string | null>(null)
 const eyeError = ref<string | null>(null)
 let prevDot: DotShape = 'square'
@@ -50,7 +52,7 @@ async function onSvg(kind: 'dot' | 'eye', e: Event) {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]
   if (!file) return
-  const result = await loadSvgUpload(file, kind === 'dot' ? 'dot-' : 'eye-')
+  const result = await loadSvgUpload(file, kind === 'dot' ? 'dot-' : 'eye-', kind === 'dot' ? { maxNodes: MAX_DOT_NODES } : {})
   input.value = ''
   const setError = (message: string | null) => {
     if (kind === 'dot') dotError.value = message

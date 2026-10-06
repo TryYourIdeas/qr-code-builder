@@ -4,6 +4,7 @@ import QrPreview from '~/components/QrPreview.vue'
 import { scansBack } from '~/utils/qr/scanCheck'
 import { svgToPng } from '~/utils/qr/rasterize'
 import { defaultStyle } from '~/utils/qrOptions'
+import { buildMatrix } from '~/utils/qr/matrix'
 
 vi.mock('~/utils/qr/scanCheck', () => ({ scansBack: vi.fn().mockResolvedValue(true) }))
 vi.mock('~/utils/qr/rasterize', () => ({ svgToPng: vi.fn().mockResolvedValue(new Blob(['png'], { type: 'image/png' })) }))
@@ -55,6 +56,16 @@ describe('QrPreview', () => {
     vi.mocked(scansBack).mockResolvedValue(false)
     const { emitted } = render(QrPreview, { props: { text: 'hello', qrStyle: defaultStyle() } })
     await waitFor(() => expect(emitted().scan?.at(-1)).toEqual([false]), { timeout: 2000 })
+  })
+
+  it('rasterizes the scan check large enough for dense codes', async () => {
+    const dense = '0123456789 '.repeat(130)
+    const size = buildMatrix(dense, 'M').size
+    render(QrPreview, { props: { text: dense, qrStyle: defaultStyle() } })
+    await waitFor(() => expect(scansBack).toHaveBeenCalled(), { timeout: 2000 })
+    const px = vi.mocked(scansBack).mock.calls.at(-1)![2]
+    expect(px).toBe(Math.min(1600, (size + 8) * 6))
+    expect(px).toBeGreaterThan(400)
   })
 
   it('downloads svg and png files with the right names', async () => {

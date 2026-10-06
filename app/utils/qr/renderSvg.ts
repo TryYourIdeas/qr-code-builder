@@ -45,19 +45,19 @@ export function renderSvg(m: QrMatrix, style: RenderStyle): string {
   for (let r = 0; r < n; r++) {
     for (let c = 0; c < n; c++) {
       if (!m.isDark(r, c) || inEyeBox(r, c) || behindLogo(r, c)) continue
-      uses.push(`<use href="#qrb-dot" x="${c + q}" y="${r + q}" width="1" height="1"/>`)
+      uses.push(`<use xlink:href="#qrb-dot" x="${c + q}" y="${r + q}" width="1" height="1"/>`)
     }
   }
 
   const eyes = ([[0, 0, 0], [n - EYE_SIZE, 0, -90], [0, n - EYE_SIZE, 90]] as const).map(([ex, ey, angle]) => {
     const x = ex + q
     const y = ey + q
-    return `<use href="#qrb-eye" x="${x}" y="${y}" width="${EYE_SIZE}" height="${EYE_SIZE}" transform="rotate(${angle} ${x + EYE_SIZE / 2} ${y + EYE_SIZE / 2})"/>`
+    return `<use xlink:href="#qrb-eye" x="${x}" y="${y}" width="${EYE_SIZE}" height="${EYE_SIZE}" transform="rotate(${angle} ${x + EYE_SIZE / 2} ${y + EYE_SIZE / 2})"/>`
   })
 
   const crisp = style.dotShape === 'square' ? ' shape-rendering="crispEdges"' : ''
   const logoMarkup = logo
-    ? `<image href="${esc(logo)}" x="${q + (n - logoSide) / 2}" y="${q + (n - logoSide) / 2}" width="${logoSide}" height="${logoSide}" preserveAspectRatio="xMidYMid meet"/>`
+    ? `<image xlink:href="${esc(logo)}" x="${q + (n - logoSide) / 2}" y="${q + (n - logoSide) / 2}" width="${logoSide}" height="${logoSide}" preserveAspectRatio="xMidYMid meet"/>`
     : ''
 
   return (

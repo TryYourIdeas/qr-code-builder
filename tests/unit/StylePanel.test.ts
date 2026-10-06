@@ -94,4 +94,11 @@ describe('StylePanel', () => {
     await waitFor(() => expect(style.customDot).not.toBeNull())
     expect(style.customDot!.inner).not.toMatch(/script|onclick|evil\.example/i)
   })
+
+  it('limits custom dot tiles to a small number of elements', async () => {
+    const style = setup()
+    await user().upload(screen.getByLabelText('Custom dot (SVG)'), svgFile(SVG('<rect/>'.repeat(201)), 'big.svg'))
+    expect(await screen.findByRole('alert')).toHaveTextContent(/too complex/i)
+    expect(style.customDot).toBeNull()
+  })
 })

@@ -26,4 +26,9 @@ describe('loadSvgUpload', () => {
     const r = await loadSvgUpload(svgFile('<svg><rect></svg>'), 'eye-')
     expect(r.ok).toBe(false)
   })
+  it('passes the element cap through to the sanitizer', async () => {
+    const r = await loadSvgUpload(svgFile(`<svg ${NS} viewBox="0 0 1 1">${'<rect/>'.repeat(6)}</svg>`), 'dot-', { maxNodes: 5 })
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.error).toMatch(/too complex/i)
+  })
 })

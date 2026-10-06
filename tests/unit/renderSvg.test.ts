@@ -10,7 +10,7 @@ const q = QUIET_ZONE
 const base = () => ({ ...defaultStyle() })
 // returns [col, row] of every drawn dark module
 const dotUses = (svg: string) =>
-  [...svg.matchAll(/<use href="#qrb-dot" x="(\d+)" y="(\d+)"/g)].map((x) => [Number(x[1]) - q, Number(x[2]) - q] as const)
+  [...svg.matchAll(/<use xlink:href="#qrb-dot" x="(\d+)" y="(\d+)"/g)].map((x) => [Number(x[1]) - q, Number(x[2]) - q] as const)
 const inEyeBox = (r: number, c: number) => (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7)
 const custom = (markup: string, prefix: string): SanitizedSvg => {
   const r = sanitizeSvg(markup, prefix)
@@ -28,7 +28,7 @@ describe('renderSvg layout', () => {
 
   it('places three eyes rotated 0, -90 and 90 about their centers, none bottom-right', () => {
     const svg = renderSvg(m, base())
-    expect([...svg.matchAll(/<use href="#qrb-eye"/g)]).toHaveLength(3)
+    expect([...svg.matchAll(/<use xlink:href="#qrb-eye"/g)]).toHaveLength(3)
     const c = (v: number) => v + q + 3.5
     expect(svg).toContain(`rotate(0 ${c(0)} ${c(0)})`)
     expect(svg).toContain(`rotate(-90 ${c(n - 7)} ${c(0)})`)
@@ -95,7 +95,7 @@ describe('renderSvg logo', () => {
   it('embeds the logo centered and clears the modules behind it', () => {
     const without = dotUses(renderSvg(m, base())).length
     const svg = renderSvg(m, { ...base(), logo })
-    expect(svg).toContain(`<image href="${logo}"`)
+    expect(svg).toContain(`<image xlink:href="${logo}"`)
     expect(dotUses(svg).length).toBeLessThan(without)
   })
   it('ignores a logo that is not a data image', () => {
