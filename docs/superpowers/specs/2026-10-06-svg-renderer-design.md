@@ -69,7 +69,7 @@ Existing fields (`fg`, `bg`, `size`, `errorLevel`, `logo`) stay. The old `dotSty
 ### Sanitizing uploaded SVGs
 - Accept `image/svg+xml` only, up to 200 KB and 2,000 nodes; parse with `DOMParser`; reject parser errors and non-`<svg>` roots.
 - Require a `viewBox` (or numeric `width`/`height`) with aspect ratio within ±5% of square.
-- Remove `script`, `foreignObject`, `iframe`, `object`, `embed`, `audio`, `video`, `animate*`, `set`; remove all `on*` attributes; keep `href`/`xlink:href` only when they start with `#` or `data:image/(png|jpeg|gif|webp)`; strip `@import` and non-local `url(...)` from `style` elements and attributes.
+- Remove `script`, `foreignObject`, `iframe`, `object`, `embed`, `audio`, `video`, `use` (reference chains expand exponentially), `animate*`, `set`, and every element or attribute outside the SVG/xlink/xml namespaces; custom dot tiles are capped at 200 elements; stylesheets containing a backslash or `@` are dropped and the rest are scoped to the upload (class names prefixed); strip whitespace/control characters before checking for `javascript:`; remove all `on*` attributes; keep `href`/`xlink:href` only when they start with `#` or `data:image/(png|jpeg|gif|webp)`; strip `@import` and non-local `url(...)` from `style` elements and attributes.
 - Prefix every `id` (and rewrite `url(#...)` and `href="#..."` references) per upload (`eye-`, `dot-`) so gradients and clip paths cannot collide between the two uploads or with our own ids.
 - Re-serialize with `XMLSerializer`. Only the sanitized output is ever embedded in the exported SVG, because standalone SVG files can execute scripts when opened directly.
 

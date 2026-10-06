@@ -34,7 +34,7 @@ Tips:
 - Design the eye in a square 7x7 box so it keeps the dark ring / light ring / dark center look scanners expect.
 - Use dark colors on the light background; uploaded SVGs keep their own colors.
 - Keep dot tiles filling most of their square; tiny dots may not scan.
-- Files must be square SVGs of at most 200 KB. Scripts, event handlers and external links inside the SVG are removed automatically.
+- Files must be square SVGs of at most 200 KB; a custom dot may have at most 200 elements because it is repeated for every dark module. Scripts, event handlers, external links, `<use>` references and stylesheets with `@` rules or escapes are removed automatically; remaining styles are scoped to your file.
 
 ```mermaid
 flowchart LR
