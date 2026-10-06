@@ -1,4 +1,6 @@
 import type { Options } from 'qr-code-styling'
+import type { DotShape, EyeShape } from '~/utils/qr/shapes'
+import type { SanitizedSvg } from '~/utils/qr/sanitizeSvg'
 
 export type DotStyle = 'square' | 'dots' | 'rounded' | 'extra-rounded' | 'classy' | 'classy-rounded'
 export type CornerStyle = 'square' | 'rounded' | 'dot'
@@ -12,6 +14,10 @@ export interface StyleState {
   size: number
   errorLevel: ErrorLevel
   logo: string | null
+  dotShape: DotShape | 'custom'
+  eyeShape: EyeShape | 'custom'
+  customDot: SanitizedSvg | null
+  customEye: SanitizedSvg | null
 }
 
 export const defaultStyle = (): StyleState => ({
@@ -22,6 +28,10 @@ export const defaultStyle = (): StyleState => ({
   size: 300,
   errorLevel: 'M',
   logo: null,
+  dotShape: 'square',
+  eyeShape: 'square',
+  customDot: null,
+  customEye: null,
 })
 
 const CORNERS = {
