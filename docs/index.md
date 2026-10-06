@@ -6,3 +6,5 @@
 - [Design (Stitch)](design.md)
 - [ADR: QR library and SPA](architecture/adrs/ADR-qr-library-and-spa.md)
 - [Design spec](superpowers/specs/2026-10-06-qr-code-builder-design.md) · [Implementation plan](superpowers/plans/2026-10-06-qr-code-builder.md)
+- [ADR: own SVG renderer](architecture/adrs/ADR-own-svg-renderer.md)
+- [SVG renderer spec](superpowers/specs/2026-10-06-svg-renderer-design.md) · [SVG renderer plan](superpowers/plans/2026-10-06-svg-renderer.md)

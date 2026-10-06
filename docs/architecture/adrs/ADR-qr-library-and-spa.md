@@ -1,6 +1,6 @@
 # ADR: qr-code-styling in a client-only SPA
 
-**Status:** accepted — 2026-10-06
+**Status:** partially superseded by `ADR-own-svg-renderer.md` (rendering library); SPA decision accepted — 2026-10-06
 
 **Context:** The app must render styled QR codes (shapes, colors, logo) and export PNG/SVG. No data needs to be stored or sent anywhere.
 

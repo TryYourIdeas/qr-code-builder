@@ -10,7 +10,7 @@ Client-side Nuxt 4 SPA that builds styled QR codes (URL, phone, email, SMS, text
 - `docker compose up --build` — nginx on `APP_PORT` (default 8080)
 
 ## Architecture
-Logic lives in pure utils under `app/utils/` (`payload`, `validate`, `contrast`, `qrOptions`, `fields`); components are thin. `qr-code-styling` is imported dynamically inside `QrPreview` (browser only). Form fields are data-driven from `FIELD_DEFS` in `app/utils/fields.ts` — to add a content type, extend `ContentType`/`QrInput`, `buildPayload`, `validateInput`, `TYPES` and `FIELD_DEFS`.
+Logic lives in pure utils under `app/utils/` (`payload`, `validate`, `contrast`, `qrOptions`, `fields`); components are thin. Rendering is our own: `app/utils/qr/` (`matrix` → `renderSvg` → `rasterize`/`scanCheck`); every shape is an SVG symbol and uploaded SVGs go through `sanitizeSvg` first. To add a bundled shape edit `app/utils/qr/shapes.ts` and the selects in `StylePanel`. Form fields are data-driven from `FIELD_DEFS` in `app/utils/fields.ts` — to add a content type, extend `ContentType`/`QrInput`, `buildPayload`, `validateInput`, `TYPES` and `FIELD_DEFS`.
 
 ## Config
 `NUXT_ADD_DEBUG_LOGS=true` enables `console.debug` traces (baked in at build time). Design: the Stitch project id is in `docs/design.md`.

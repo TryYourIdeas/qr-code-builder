@@ -39,3 +39,13 @@
 - **Description:** explain why Download buttons are disabled ("Complete the required fields"); `tabindex="0"` on the tab panel; nginx `Cache-Control: no-cache` for `index.html` and 404 for missing `/_nuxt/` assets; a UTF-8/emoji decode test.
 - **Value:** clearer UX for keyboard/screen-reader users and safer redeploys.
 - **Consequence of not doing it:** minor UX friction; a cached `index.html` can reference assets removed by a redeploy.
+
+## Restore dropped dot styles and gradients
+- **Description:** `classy`, `classy-rounded`, `extra-rounded` dot styles and color gradients were available with qr-code-styling; redraw them as bundled tiles/gradients.
+- **Value:** more built-in looks without needing an SVG file.
+- **Consequence of not doing it:** fewer built-in styles, although a custom SVG can reproduce any look.
+
+## Separate outer-frame and inner-dot eye SVGs
+- **Description:** allow two uploads (frame and center) or a different eye per corner.
+- **Value:** finer control of the eye design.
+- **Consequence of not doing it:** one eye design is used for all three corners.
