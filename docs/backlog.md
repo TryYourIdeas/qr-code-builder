@@ -39,3 +39,18 @@
 - **Description:** explain why Download buttons are disabled ("Complete the required fields"); `tabindex="0"` on the tab panel; nginx `Cache-Control: no-cache` for `index.html` and 404 for missing `/_nuxt/` assets; a UTF-8/emoji decode test.
 - **Value:** clearer UX for keyboard/screen-reader users and safer redeploys.
 - **Consequence of not doing it:** minor UX friction; a cached `index.html` can reference assets removed by a redeploy.
+
+## Restore dropped dot styles and gradients
+- **Description:** `classy`, `classy-rounded`, `extra-rounded` dot styles and color gradients were available with qr-code-styling; redraw them as bundled tiles/gradients.
+- **Value:** more built-in looks without needing an SVG file.
+- **Consequence of not doing it:** fewer built-in styles, although a custom SVG can reproduce any look.
+
+## Separate outer-frame and inner-dot eye SVGs
+- **Description:** allow two uploads (frame and center) or a different eye per corner.
+- **Value:** finer control of the eye design.
+- **Consequence of not doing it:** one eye design is used for all three corners.
+
+## SVG renderer polish (from review)
+- **Description:** keep more root attributes of uploaded SVGs (`stroke-linecap`, `stroke-linejoin`, root `style`/`class`, `currentColor`); show a failed PNG download as a separate message instead of replacing the preview; reset the logo file input and accept `.svg` logos with an empty MIME type; keep the centre alignment pattern when clearing modules behind a logo on version 7+ codes; render the PNG at the target size to avoid Safari blur; debounce render and URL encoding on each keystroke.
+- **Value:** fewer surprises with real-world SVG exports and logos, smoother typing on dense codes.
+- **Consequence of not doing it:** some uploaded icons lose rounded caps/joins, a failed PNG download hides the preview until the next edit, and dense codes can feel slow while typing.

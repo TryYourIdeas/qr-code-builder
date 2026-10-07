@@ -1,50 +1,91 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
-import type QRCodeStyling from 'qr-code-styling'
-import type { Options } from 'qr-code-styling'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { QrCapacityError, buildMatrix } from '~/utils/qr/matrix'
+import { renderSvg } from '~/utils/qr/renderSvg'
+import { svgToPng } from '~/utils/qr/rasterize'
+import { scansBack } from '~/utils/qr/scanCheck'
 import { debugLog } from '~/utils/log'
+import type { StyleState } from '~/utils/qrOptions'
 
-const props = defineProps<{ options: Options | null }>()
-const emit = defineEmits<{ error: [message: string | null] }>()
+const props = defineProps<{ text: string | null; qrStyle: StyleState }>()
+const emit = defineEmits<{ error: [message: string | null]; scan: [ok: boolean | null] }>()
 
-const container = ref<HTMLDivElement>()
+const svg = ref<string | null>(null)
 const error = ref<string | null>(null)
-let Ctor: typeof QRCodeStyling | null = null
-let qr: QRCodeStyling | null = null
+let scanTimer: ReturnType<typeof setTimeout> | undefined
+let scanRun = 0
 
 const TOO_LONG = 'This content is too long to fit in a QR code. Shorten it or lower the error-correction level.'
 // With a logo the error-correction level is locked to High, so that control cannot help.
 const TOO_LONG_WITH_LOGO = 'This content is too long to fit in a QR code with a logo. Remove the logo or shorten the content.'
 
-function render() {
-  if (!Ctor || !container.value || !props.options) return
-  try {
-    if (!qr) {
-      qr = new Ctor(props.options)
-      qr.append(container.value)
-    } else {
-      qr.update(props.options)
+const previewSrc = computed(() =>
+  svg.value ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.value)}` : null,
+)
+
+function scheduleScanCheck(markup: string, text: string, px: number) {
+  const run = scanRun
+  scanTimer = setTimeout(async () => {
+    try {
+      const ok = await scansBack(markup, text, px)
+      debugLog('scan check', { ok })
+      if (run === scanRun) emit('scan', ok)
+    } catch (e) {
+      console.error('[qr-code-builder] scan check failed', { length: text.length }, e)
+      if (run === scanRun) emit('scan', null)
     }
-    debugLog('preview rendered', { length: props.options.data?.length })
-    error.value = null
-  } catch (e) {
-    console.error('[qr-code-builder] render failed', { length: props.options.data?.length }, e)
-    error.value = props.options.image ? TOO_LONG_WITH_LOGO : TOO_LONG
-  }
-  emit('error', error.value)
+  }, 300)
 }
 
-onMounted(async () => {
-  Ctor = (await import('qr-code-styling')).default
-  render()
-})
-watch(() => props.options, render, { deep: true })
+function update() {
+  clearTimeout(scanTimer)
+  scanRun++
+  svg.value = null
+  error.value = null
+  emit('scan', null)
+  if (props.text === null) {
+    emit('error', null)
+    return
+  }
+  let scanPx = 400
+  try {
+    const level = props.qrStyle.logo ? 'H' : props.qrStyle.errorLevel
+    const matrix = buildMatrix(props.text, level)
+    // keep at least ~6 px per module (including the quiet zone) so dense codes can still be decoded
+    scanPx = Math.min(1600, Math.max(400, (matrix.size + 8) * 6))
+    svg.value = renderSvg(matrix, props.qrStyle)
+    debugLog('qr rendered', { length: props.text.length, level })
+  } catch (e) {
+    console.error('[qr-code-builder] render failed', { length: props.text.length }, e)
+    error.value =
+      e instanceof QrCapacityError
+        ? props.qrStyle.logo ? TOO_LONG_WITH_LOGO : TOO_LONG
+        : 'Could not render the QR code.'
+  }
+  emit('error', error.value)
+  if (svg.value) scheduleScanCheck(svg.value, props.text, scanPx)
+}
+
+watch(() => [props.text, props.qrStyle], update, { deep: true, immediate: true })
+onBeforeUnmount(() => clearTimeout(scanTimer))
+
+function saveBlob(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = name
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
 
 async function download(ext: 'png' | 'svg') {
-  if (!qr || error.value) return
+  if (!svg.value || error.value) return
   debugLog('download', ext)
   try {
-    await qr.download({ name: 'qr-code', extension: ext })
+    const blob = ext === 'svg' ? new Blob([svg.value], { type: 'image/svg+xml' }) : await svgToPng(svg.value, props.qrStyle.size)
+    saveBlob(blob, `qr-code.${ext}`)
   } catch (e) {
     console.error('[qr-code-builder] download failed', { ext }, e)
     error.value = 'Download failed. Please try again.'
@@ -55,8 +96,15 @@ defineExpose({ download })
 
 <template>
   <div data-testid="qr-preview" class="flex min-h-72 flex-col items-center justify-center gap-3">
-    <p v-if="!options" class="text-slate-600">Fill in the form to see your QR code.</p>
+    <p v-if="text === null" class="text-slate-600">Fill in the form to see your QR code.</p>
     <p v-else-if="error" role="alert" class="max-w-sm text-center text-red-700">{{ error }}</p>
-    <div v-show="options && !error" ref="container" class="max-w-full overflow-auto" aria-label="QR code preview" role="img" />
+    <img
+      v-else-if="previewSrc"
+      :src="previewSrc"
+      alt="QR code preview"
+      :width="qrStyle.size"
+      :height="qrStyle.size"
+      class="h-auto max-w-full"
+    />
   </div>
 </template>

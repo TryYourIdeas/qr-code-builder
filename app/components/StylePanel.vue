@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { StyleState } from '~/utils/qrOptions'
+import { loadSvgUpload } from '~/utils/qr/upload'
+import type { SanitizedSvg } from '~/utils/qr/sanitizeSvg'
+import type { DotShape, EyeShape } from '~/utils/qr/shapes'
 
 defineProps<{ warning: string | null }>()
 const style = defineModel<StyleState>({ required: true })
@@ -38,6 +41,56 @@ function removeLogo() {
   logoError.value = null
 }
 
+// The dot tile is repeated for every dark module (thousands), so keep it small.
+const MAX_DOT_NODES = 200
+const dotError = ref<string | null>(null)
+const eyeError = ref<string | null>(null)
+let prevDot: DotShape = 'square'
+let prevEye: EyeShape = 'square'
+
+async function onSvg(kind: 'dot' | 'eye', e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  const result = await loadSvgUpload(file, kind === 'dot' ? 'dot-' : 'eye-', kind === 'dot' ? { maxNodes: MAX_DOT_NODES } : {})
+  input.value = ''
+  const setError = (message: string | null) => {
+    if (kind === 'dot') dotError.value = message
+    else eyeError.value = message
+  }
+  if (!result.ok) {
+    setError(result.error)
+    return
+  }
+  setError(null)
+  if (kind === 'dot') {
+    if (style.value.dotShape !== 'custom') prevDot = style.value.dotShape
+    style.value.customDot = result.svg
+    style.value.dotShape = 'custom'
+  } else {
+    if (style.value.eyeShape !== 'custom') prevEye = style.value.eyeShape
+    style.value.customEye = result.svg
+    style.value.eyeShape = 'custom'
+  }
+}
+
+function removeSvg(kind: 'dot' | 'eye') {
+  if (kind === 'dot') {
+    style.value.customDot = null
+    style.value.dotShape = prevDot
+    dotError.value = null
+  } else {
+    style.value.customEye = null
+    style.value.eyeShape = prevEye
+    eyeError.value = null
+  }
+}
+
+const thumb = (svg: SanitizedSvg) =>
+  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="${svg.viewBox}">${svg.inner}</svg>`,
+  )}`
+
 const field = 'mt-1 block w-full rounded-md border border-slate-400 px-3 py-2 text-slate-900 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:opacity-60'
 const labelCls = 'block text-sm font-medium text-slate-800'
 </script>
@@ -58,23 +111,46 @@ const labelCls = 'block text-sm font-medium text-slate-800'
 
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <label for="style-dots" :class="labelCls">Dot style</label>
-        <select id="style-dots" v-model="style.dotStyle" :class="field">
+        <label for="style-dots" :class="labelCls">Dot shape</label>
+        <select id="style-dots" v-model="style.dotShape" :class="field">
           <option value="square">Square</option>
           <option value="dots">Dots</option>
           <option value="rounded">Rounded</option>
-          <option value="extra-rounded">Extra rounded</option>
-          <option value="classy">Classy</option>
-          <option value="classy-rounded">Classy rounded</option>
+          <option v-if="style.customDot" value="custom">Custom SVG</option>
         </select>
       </div>
       <div>
-        <label for="style-corners" :class="labelCls">Corner style</label>
-        <select id="style-corners" v-model="style.cornerStyle" :class="field">
+        <label for="style-eyes" :class="labelCls">Eye shape</label>
+        <select id="style-eyes" v-model="style.eyeShape" :class="field">
           <option value="square">Square</option>
           <option value="rounded">Rounded</option>
           <option value="dot">Dot</option>
+          <option v-if="style.customEye" value="custom">Custom SVG</option>
         </select>
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label for="style-custom-dot" :class="labelCls">Custom dot (SVG)</label>
+        <input id="style-custom-dot" type="file" accept="image/svg+xml,.svg" :class="field" @change="onSvg('dot', $event)" />
+        <div v-if="style.customDot" class="mt-2 flex items-center gap-3">
+          <img :src="thumb(style.customDot)" alt="Custom dot preview" class="h-10 w-10 rounded border border-slate-300 bg-white" />
+          <button type="button" class="text-sm text-indigo-700 underline" @click="removeSvg('dot')">Remove custom dot</button>
+        </div>
+        <p v-if="dotError" role="alert" class="mt-1 text-sm text-red-700">{{ dotError }}</p>
+      </div>
+      <div>
+        <label for="style-custom-eye" :class="labelCls">Custom eye (SVG)</label>
+        <input id="style-custom-eye" type="file" accept="image/svg+xml,.svg" :class="field" aria-describedby="style-eye-hint" @change="onSvg('eye', $event)" />
+        <p id="style-eye-hint" class="mt-1 text-xs text-slate-600">
+          One SVG for the whole 7x7 eye. It is placed at three corners, rotated 0°, -90° and +90°. Your SVG keeps its own colors.
+        </p>
+        <div v-if="style.customEye" class="mt-2 flex items-center gap-3">
+          <img :src="thumb(style.customEye)" alt="Custom eye preview" class="h-10 w-10 rounded border border-slate-300 bg-white" />
+          <button type="button" class="text-sm text-indigo-700 underline" @click="removeSvg('eye')">Remove custom eye</button>
+        </div>
+        <p v-if="eyeError" role="alert" class="mt-1 text-sm text-red-700">{{ eyeError }}</p>
       </div>
     </div>
 

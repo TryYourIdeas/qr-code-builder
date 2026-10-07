@@ -24,14 +24,14 @@ test('downloads are disabled until the input is valid', async ({ page }) => {
 
 test('URL round-trips through the downloaded PNG', async ({ page }) => {
   await page.getByRole('textbox', { name: 'URL', exact: true }).fill('https://example.com/hello?x=1')
-  await expect(page.getByTestId('qr-preview').locator('canvas')).toBeVisible()
+  await expect(page.getByTestId('qr-preview').locator('img')).toBeVisible()
   expect(await decodeDownloadedPng(page)).toBe('https://example.com/hello?x=1')
 })
 
 test('phone number round-trips as a tel: link', async ({ page }) => {
   await page.getByRole('tab', { name: 'Phone' }).click()
   await page.getByRole('textbox', { name: 'Phone number', exact: true }).fill('+1 (555) 010-9999')
-  await expect(page.getByTestId('qr-preview').locator('canvas')).toBeVisible()
+  await expect(page.getByTestId('qr-preview').locator('img')).toBeVisible()
   expect(await decodeDownloadedPng(page)).toBe('tel:+15550109999')
 })
 
