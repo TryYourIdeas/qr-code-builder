@@ -31,6 +31,7 @@ sequenceDiagram
 4. Use **Remove custom eye** / **Remove custom dot** to go back to the previous bundled shape.
 
 Tips:
+- Rotation uses SVG's clockwise-positive convention: the top-right eye is your SVG rotated -90° (counter-clockwise) and the bottom-left eye is rotated +90° (clockwise). Symmetric designs look the same either way; for an asymmetric design, draw it so that this orientation looks right.
 - Design the eye in a square 7x7 box so it keeps the dark ring / light ring / dark center look scanners expect.
 - Use dark colors on the light background; uploaded SVGs keep their own colors.
 - Keep dot tiles filling most of their square; tiny dots may not scan.
