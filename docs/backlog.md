@@ -49,3 +49,8 @@
 - **Description:** allow two uploads (frame and center) or a different eye per corner.
 - **Value:** finer control of the eye design.
 - **Consequence of not doing it:** one eye design is used for all three corners.
+
+## SVG renderer polish (from review)
+- **Description:** keep more root attributes of uploaded SVGs (`stroke-linecap`, `stroke-linejoin`, root `style`/`class`, `currentColor`); show a failed PNG download as a separate message instead of replacing the preview; reset the logo file input and accept `.svg` logos with an empty MIME type; keep the centre alignment pattern when clearing modules behind a logo on version 7+ codes; render the PNG at the target size to avoid Safari blur; debounce render and URL encoding on each keystroke.
+- **Value:** fewer surprises with real-world SVG exports and logos, smoother typing on dense codes.
+- **Consequence of not doing it:** some uploaded icons lose rounded caps/joins, a failed PNG download hides the preview until the next edit, and dense codes can feel slow while typing.
