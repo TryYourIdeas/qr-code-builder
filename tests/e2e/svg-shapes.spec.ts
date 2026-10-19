@@ -101,3 +101,11 @@ test('a dense code with custom tiles still renders', async ({ page }) => {
   await expect(preview(page)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Download PNG' })).toBeEnabled()
 })
+
+test('XOR logo mode fills the image with the logo and still scans', async ({ page }) => {
+  await fillUrl(page, 'https://example.com/xor')
+  await page.getByLabel('Logo', { exact: true }).setInputFiles(fixture('logo.svg'))
+  await page.getByLabel('Logo placement').selectOption('xor')
+  await expect(preview(page)).toBeVisible()
+  expect(await decodePng(page)).toBe('https://example.com/xor')
+})

@@ -101,4 +101,14 @@ describe('StylePanel', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(/too complex/i)
     expect(style.customDot).toBeNull()
   })
+
+  it('offers the logo placement only with a logo and binds it to the style', async () => {
+    const style = setup()
+    expect(screen.queryByLabelText('Logo placement')).toBeNull()
+    style.logo = 'data:image/png;base64,AAAA'
+    const select = await screen.findByLabelText('Logo placement')
+    expect(select).toHaveValue('center')
+    await user().selectOptions(select, 'xor')
+    expect(style.logoMode).toBe('xor')
+  })
 })

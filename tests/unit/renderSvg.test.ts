@@ -113,3 +113,36 @@ describe('renderSvg dense codes', () => {
     expect(dotUses(svg).length).toBeGreaterThan(1000)
   })
 })
+
+describe('renderSvg XOR logo mode', () => {
+  const logo = 'data:image/png;base64,AAAA'
+  const xor = () => renderSvg(m, { ...base(), logo, logoMode: 'xor' })
+
+  it('fills the canvas with the logo and inverts it through a mask of the dark modules', () => {
+    const svg = xor()
+    const total = n * 6
+    expect(svg).toContain(`viewBox="0 0 ${total} ${total}"`)
+    expect(svg).toContain(`<image xlink:href="${logo}" width="${total}" height="${total}"`)
+    expect(svg).toContain('<feColorMatrix type="matrix" values="-1 0 0 0 1 0 -1 0 0 1 0 0 -1 0 1 0 0 0 1 0"/>')
+    expect(svg).toContain('filter="url(#qrb-invert)" mask="url(#qrb-xor-mask)"')
+  })
+
+  it('places the QR on the middle two thirds, one square per dark module including the eyes', () => {
+    const svg = xor()
+    const cells = [...svg.matchAll(/M(\d+) (\d+)h4v4h-4z/g)].map((x) => [Number(x[1]), Number(x[2])])
+    let dark = 0
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (m.isDark(r, c)) dark++
+    expect(cells).toHaveLength(dark)
+    expect(Math.min(...cells.flat())).toBe(n)
+    expect(Math.max(...cells.flat()) + 4).toBe(5 * n)
+  })
+
+  it('falls back to the plain code without a valid logo', () => {
+    expect(renderSvg(m, { ...base(), logoMode: 'xor' })).not.toContain('qrb-xor-mask')
+    expect(renderSvg(m, { ...base(), logo: 'http://evil.example/x.png', logoMode: 'xor' })).not.toMatch(/evil|<image/)
+  })
+
+  it('keeps the centered mode by default', () => {
+    expect(renderSvg(m, { ...base(), logo })).not.toContain('qrb-xor-mask')
+  })
+})

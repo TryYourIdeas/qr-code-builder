@@ -178,5 +178,18 @@ const labelCls = 'block text-sm font-medium text-slate-800'
       <button v-if="style.logo" type="button" class="mt-2 text-sm text-indigo-700 underline" @click="removeLogo">Remove logo</button>
       <p v-if="logoError" role="alert" class="mt-1 text-sm text-red-700">{{ logoError }}</p>
     </div>
+
+    <div v-if="style.logo">
+      <label for="style-logo-mode" :class="labelCls">Logo placement</label>
+      <select id="style-logo-mode" v-model="style.logoMode" :class="field" aria-describedby="style-logo-mode-hint">
+        <option value="center">Centered in the code</option>
+        <option value="xor">Full-size logo, code mixed in (XOR)</option>
+      </select>
+      <p id="style-logo-mode-hint" class="mt-1 text-xs text-slate-600">
+        {{ style.logoMode === 'xor'
+          ? 'The logo fills the image and the code covers its middle two thirds, inverting the logo colors under dark modules. Works best with high-contrast logos; dot/eye shapes and colors are ignored.'
+          : 'The logo is placed small in the center of the code.' }}
+      </p>
+    </div>
   </div>
 </template>

@@ -2,7 +2,7 @@ import type { QrMatrix } from '~/utils/qr/matrix'
 import { dotMarkup, eyeMarkup, safeColor } from '~/utils/qr/shapes'
 import type { StyleState } from '~/utils/qrOptions'
 
-export type RenderStyle = Pick<StyleState, 'fg' | 'bg' | 'size' | 'dotShape' | 'eyeShape' | 'customDot' | 'customEye' | 'logo'>
+export type RenderStyle = Pick<StyleState, 'fg' | 'bg' | 'size' | 'dotShape' | 'eyeShape' | 'customDot' | 'customEye' | 'logo' | 'logoMode'>
 
 export const QUIET_ZONE = 4
 export const EYE_SIZE = 7
@@ -12,6 +12,31 @@ const LOGO_RE = /^data:image\/(png|jpeg|svg\+xml);base64,[A-Za-z0-9+/=]+$/
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
 
+// XOR mode: the logo fills the canvas and the QR spans the middle 2/3 of it (module = 4 units on a 6n canvas).
+const XOR_CANVAS = 6
+const XOR_MODULE = 4
+const INVERT = '-1 0 0 0 1 0 -1 0 0 1 0 0 -1 0 1 0 0 0 1 0'
+
+function renderXorSvg(m: QrMatrix, logo: string, bg: string, px: number): string {
+  const n = m.size
+  const total = n * XOR_CANVAS
+  const offset = n
+  let d = ''
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      if (m.isDark(r, c)) d += `M${offset + c * XOR_MODULE} ${offset + r * XOR_MODULE}h${XOR_MODULE}v${XOR_MODULE}h-${XOR_MODULE}z`
+    }
+  }
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${px}" height="${px}" viewBox="0 0 ${total} ${total}">` +
+    `<defs><g id="qrb-art"><rect width="${total}" height="${total}" fill="${bg}"/>` +
+    `<image xlink:href="${esc(logo)}" width="${total}" height="${total}" preserveAspectRatio="xMidYMid slice"/></g>` +
+    `<filter id="qrb-invert" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${INVERT}"/></filter>` +
+    `<mask id="qrb-xor-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="${total}" height="${total}"><path fill="#fff" shape-rendering="crispEdges" d="${d}"/></mask></defs>` +
+    `<use xlink:href="#qrb-art"/><use xlink:href="#qrb-art" filter="url(#qrb-invert)" mask="url(#qrb-xor-mask)"/></svg>`
+  )
+}
+
 export function renderSvg(m: QrMatrix, style: RenderStyle): string {
   const n = m.size
   const q = QUIET_ZONE
@@ -19,6 +44,9 @@ export function renderSvg(m: QrMatrix, style: RenderStyle): string {
   const fg = safeColor(style.fg, '#000000')
   const bg = safeColor(style.bg, '#ffffff')
   const px = Number.isFinite(style.size) ? Math.max(1, Math.round(style.size)) : 300
+
+  const logo = style.logo && LOGO_RE.test(style.logo) ? style.logo : null
+  if (logo && style.logoMode === 'xor') return renderXorSvg(m, logo, bg, px)
 
   const bundledDot = style.dotShape === 'custom' ? 'square' : style.dotShape
   const bundledEye = style.eyeShape === 'custom' ? 'square' : style.eyeShape
@@ -31,7 +59,6 @@ export function renderSvg(m: QrMatrix, style: RenderStyle): string {
       ? style.customEye
       : { viewBox: '0 0 7 7', inner: eyeMarkup(bundledEye, fg) }
 
-  const logo = style.logo && LOGO_RE.test(style.logo) ? style.logo : null
   const logoSide = logo ? n * LOGO_RATIO : 0
   const half = logo ? logoSide / 2 + LOGO_PAD : 0
   const mid = n / 2
