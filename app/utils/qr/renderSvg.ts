@@ -61,7 +61,7 @@ export function renderSvg(m: QrMatrix, style: RenderStyle): string {
 
   const logo = style.logo && LOGO_RE.test(style.logo) ? style.logo : null
   if (logo && style.logoPlacement === 'full') {
-    return style.mixMode === 'xor' ? renderXorSvg(m, logo, bg, px) : renderOverlaySvg(m, style, logo, bg, px, style.mixMode === 'translucent' ? 0.5 : 1)
+    return style.mixMode === 'xor' ? renderXorSvg(m, logo, bg, px) : renderOverlaySvg(m, style, logo, bg, px, style.mixMode === 'translucent' ? 0.7 : 1)
   }
 
   const bundledDot = style.dotShape === 'custom' ? 'square' : style.dotShape
