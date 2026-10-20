@@ -128,7 +128,7 @@ test('full-size logo with translucent mixture still scans', async ({ page }) => 
   expect(await decodePng(page)).toBe('https://example.com/translucent')
 })
 
-test('faded mixture renders and warns that the low-contrast code may not scan', async ({ page }) => {
+test('faded mixture renders and warns that the invisible code cannot be scanned', async ({ page }) => {
   await fillUrl(page, 'https://example.com/faded')
   await page.getByLabel('Logo', { exact: true }).setInputFiles(fixture('logo.svg'))
   await page.getByLabel('Logo placement').selectOption('full')
