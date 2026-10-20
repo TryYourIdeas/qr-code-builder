@@ -7,3 +7,6 @@
 
 ## 2026-10-19
 - Added XOR logo placement: full-size logo with the QR code (middle 2/3) inverting the logo under dark modules.
+
+## 2026-10-20
+- Split the logo option into Logo placement (center / full size) and Mixture mode (overlay / XOR); added overlay mode.

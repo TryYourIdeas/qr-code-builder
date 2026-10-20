@@ -52,10 +52,10 @@ flowchart LR
 - Dark code on a light background scans best. Logos are covered by high error correction, so keep them small.
 - Very long content cannot fit in a QR code; shorten it if you see the "too long" message.
 
-## Mixing the code into a full-size logo (XOR)
+## Full-size logo and mixture mode
 1. In **Style**, choose a **Logo** file.
-2. Set **Logo placement** to *Full-size logo, code mixed in (XOR)*.
-3. The logo fills the whole image; the QR code covers its middle two thirds. Under every dark module the logo colors are inverted, under light modules the logo is unchanged.
+2. Set **Logo placement** to *Full size*. The logo fills the whole image and the QR code covers its middle two thirds.
+3. Pick a **Mixture mode**: *Overlay* draws the styled code (with its background) on top of the logo; *XOR* inverts the logo colors under every dark module and leaves them unchanged under light modules.
 
 ```mermaid
 flowchart LR
@@ -65,5 +65,5 @@ flowchart LR
   C -- no --> K[Keep logo pixels]
 ```
 
-- Works best with high-contrast logos that are mostly one tone; mid-gray or busy logos can make the code unreadable. The scan check under the preview tells you if it no longer scans.
-- Dot shape, eye shape, and foreground color are ignored in this mode (modules are plain squares); the background color shows through transparent logo areas.
+- XOR works best with high-contrast logos that are mostly one tone; mid-gray or busy logos can make the code unreadable. The scan check under the preview tells you if it no longer scans.
+- In XOR mode dot shape, eye shape, and foreground color are ignored (modules are plain squares); the background color shows through transparent logo areas.

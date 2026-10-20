@@ -105,7 +105,16 @@ test('a dense code with custom tiles still renders', async ({ page }) => {
 test('XOR logo mode fills the image with the logo and still scans', async ({ page }) => {
   await fillUrl(page, 'https://example.com/xor')
   await page.getByLabel('Logo', { exact: true }).setInputFiles(fixture('logo.svg'))
-  await page.getByLabel('Logo placement').selectOption('xor')
+  await page.getByLabel('Logo placement').selectOption('full')
+  await page.getByLabel('Mixture mode').selectOption('xor')
   await expect(preview(page)).toBeVisible()
   expect(await decodePng(page)).toBe('https://example.com/xor')
+})
+
+test('full-size logo with overlay mixture still scans', async ({ page }) => {
+  await fillUrl(page, 'https://example.com/overlay')
+  await page.getByLabel('Logo', { exact: true }).setInputFiles(fixture('logo.svg'))
+  await page.getByLabel('Logo placement').selectOption('full')
+  await expect(preview(page)).toBeVisible()
+  expect(await decodePng(page)).toBe('https://example.com/overlay')
 })

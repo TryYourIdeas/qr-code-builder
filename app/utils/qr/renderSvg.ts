@@ -2,7 +2,7 @@ import type { QrMatrix } from '~/utils/qr/matrix'
 import { dotMarkup, eyeMarkup, safeColor } from '~/utils/qr/shapes'
 import type { StyleState } from '~/utils/qrOptions'
 
-export type RenderStyle = Pick<StyleState, 'fg' | 'bg' | 'size' | 'dotShape' | 'eyeShape' | 'customDot' | 'customEye' | 'logo' | 'logoMode'>
+export type RenderStyle = Pick<StyleState, 'fg' | 'bg' | 'size' | 'dotShape' | 'eyeShape' | 'customDot' | 'customEye' | 'logo' | 'logoPlacement' | 'mixMode'>
 
 export const QUIET_ZONE = 4
 export const EYE_SIZE = 7
@@ -37,6 +37,18 @@ function renderXorSvg(m: QrMatrix, logo: string, bg: string, px: number): string
   )
 }
 
+// Overlay mode: the styled code (with its quiet zone and background) sits on the middle 2/3 of the full-size logo.
+function renderOverlaySvg(m: QrMatrix, style: RenderStyle, logo: string, bg: string, px: number): string {
+  const code = m.size + 2 * QUIET_ZONE
+  const total = code * 3
+  const inner = renderSvg(m, { ...style, logo: null, size: code * 2 }).replace('<svg ', `<svg x="${code / 2}" y="${code / 2}" `)
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${px}" height="${px}" viewBox="0 0 ${total} ${total}">` +
+    `<rect width="${total}" height="${total}" fill="${bg}"/>` +
+    `<image xlink:href="${esc(logo)}" width="${total}" height="${total}" preserveAspectRatio="xMidYMid slice"/>${inner}</svg>`
+  )
+}
+
 export function renderSvg(m: QrMatrix, style: RenderStyle): string {
   const n = m.size
   const q = QUIET_ZONE
@@ -46,7 +58,9 @@ export function renderSvg(m: QrMatrix, style: RenderStyle): string {
   const px = Number.isFinite(style.size) ? Math.max(1, Math.round(style.size)) : 300
 
   const logo = style.logo && LOGO_RE.test(style.logo) ? style.logo : null
-  if (logo && style.logoMode === 'xor') return renderXorSvg(m, logo, bg, px)
+  if (logo && style.logoPlacement === 'full') {
+    return style.mixMode === 'xor' ? renderXorSvg(m, logo, bg, px) : renderOverlaySvg(m, style, logo, bg, px)
+  }
 
   const bundledDot = style.dotShape === 'custom' ? 'square' : style.dotShape
   const bundledEye = style.eyeShape === 'custom' ? 'square' : style.eyeShape

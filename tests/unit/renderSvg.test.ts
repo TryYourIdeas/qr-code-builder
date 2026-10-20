@@ -114,9 +114,9 @@ describe('renderSvg dense codes', () => {
   })
 })
 
-describe('renderSvg XOR logo mode', () => {
+describe('renderSvg full-size logo', () => {
   const logo = 'data:image/png;base64,AAAA'
-  const xor = () => renderSvg(m, { ...base(), logo, logoMode: 'xor' })
+  const xor = () => renderSvg(m, { ...base(), logo, logoPlacement: 'full', mixMode: 'xor' })
 
   it('fills the canvas with the logo and inverts it through a mask of the dark modules', () => {
     const svg = xor()
@@ -138,11 +138,21 @@ describe('renderSvg XOR logo mode', () => {
   })
 
   it('falls back to the plain code without a valid logo', () => {
-    expect(renderSvg(m, { ...base(), logoMode: 'xor' })).not.toContain('qrb-xor-mask')
-    expect(renderSvg(m, { ...base(), logo: 'http://evil.example/x.png', logoMode: 'xor' })).not.toMatch(/evil|<image/)
+    expect(renderSvg(m, { ...base(), logoPlacement: 'full', mixMode: 'xor' })).not.toContain('qrb-xor-mask')
+    expect(renderSvg(m, { ...base(), logo: 'http://evil.example/x.png', logoPlacement: 'full', mixMode: 'xor' })).not.toMatch(/evil|<image/)
   })
 
   it('keeps the centered mode by default', () => {
     expect(renderSvg(m, { ...base(), logo })).not.toContain('qrb-xor-mask')
+  })
+
+  it('overlay mode draws the styled code on the middle two thirds of the logo', () => {
+    const svg = renderSvg(m, { ...base(), logo, logoPlacement: 'full', mixMode: 'overlay' })
+    const code = n + 2 * q
+    expect(svg).toContain(`viewBox="0 0 ${code * 3} ${code * 3}"`)
+    expect(svg).toContain(`<svg x="${code / 2}" y="${code / 2}" xmlns`)
+    expect(svg).toContain(`width="${code * 2}" height="${code * 2}" viewBox="0 0 ${code} ${code}"`)
+    expect(svg).not.toContain('qrb-xor-mask')
+    expect([...svg.matchAll(/<image /g)]).toHaveLength(1)
   })
 })

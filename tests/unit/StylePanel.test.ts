@@ -102,13 +102,18 @@ describe('StylePanel', () => {
     expect(style.customDot).toBeNull()
   })
 
-  it('offers the logo placement only with a logo and binds it to the style', async () => {
+  it('offers logo placement with a logo, and mixture mode only for a full-size logo', async () => {
     const style = setup()
     expect(screen.queryByLabelText('Logo placement')).toBeNull()
     style.logo = 'data:image/png;base64,AAAA'
-    const select = await screen.findByLabelText('Logo placement')
-    expect(select).toHaveValue('center')
-    await user().selectOptions(select, 'xor')
-    expect(style.logoMode).toBe('xor')
+    const placement = await screen.findByLabelText('Logo placement')
+    expect(placement).toHaveValue('center')
+    expect(screen.queryByLabelText('Mixture mode')).toBeNull()
+    await user().selectOptions(placement, 'full')
+    expect(style.logoPlacement).toBe('full')
+    const mix = await screen.findByLabelText('Mixture mode')
+    expect(mix).toHaveValue('overlay')
+    await user().selectOptions(mix, 'xor')
+    expect(style.mixMode).toBe('xor')
   })
 })

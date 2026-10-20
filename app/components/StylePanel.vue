@@ -179,17 +179,29 @@ const labelCls = 'block text-sm font-medium text-slate-800'
       <p v-if="logoError" role="alert" class="mt-1 text-sm text-red-700">{{ logoError }}</p>
     </div>
 
-    <div v-if="style.logo">
-      <label for="style-logo-mode" :class="labelCls">Logo placement</label>
-      <select id="style-logo-mode" v-model="style.logoMode" :class="field" aria-describedby="style-logo-mode-hint">
-        <option value="center">Centered in the code</option>
-        <option value="xor">Full-size logo, code mixed in (XOR)</option>
-      </select>
-      <p id="style-logo-mode-hint" class="mt-1 text-xs text-slate-600">
-        {{ style.logoMode === 'xor'
-          ? 'The logo fills the image and the code covers its middle two thirds, inverting the logo colors under dark modules. Works best with high-contrast logos; dot/eye shapes and colors are ignored.'
-          : 'The logo is placed small in the center of the code.' }}
-      </p>
+    <div v-if="style.logo" class="space-y-4">
+      <div>
+        <label for="style-logo-placement" :class="labelCls">Logo placement</label>
+        <select id="style-logo-placement" v-model="style.logoPlacement" :class="field" aria-describedby="style-logo-placement-hint">
+          <option value="center">Small, in the center of the code</option>
+          <option value="full">Full size, code in the middle two thirds</option>
+        </select>
+        <p id="style-logo-placement-hint" class="mt-1 text-xs text-slate-600">
+          {{ style.logoPlacement === 'full' ? 'The logo fills the whole image and the code covers its middle two thirds.' : 'The logo is placed small in the center of the code.' }}
+        </p>
+      </div>
+      <div v-if="style.logoPlacement === 'full'">
+        <label for="style-mix-mode" :class="labelCls">Mixture mode</label>
+        <select id="style-mix-mode" v-model="style.mixMode" :class="field" aria-describedby="style-mix-mode-hint">
+          <option value="overlay">Overlay (code on its own background)</option>
+          <option value="xor">XOR (invert logo colors under dark modules)</option>
+        </select>
+        <p id="style-mix-mode-hint" class="mt-1 text-xs text-slate-600">
+          {{ style.mixMode === 'xor'
+            ? 'Works best with high-contrast logos; dot/eye shapes and colors are ignored.'
+            : 'The styled code is drawn on top of the logo, with its quiet zone and background color.' }}
+        </p>
+      </div>
     </div>
   </div>
 </template>
