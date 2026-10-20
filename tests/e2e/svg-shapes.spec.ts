@@ -118,3 +118,12 @@ test('full-size logo with overlay mixture still scans', async ({ page }) => {
   await expect(preview(page)).toBeVisible()
   expect(await decodePng(page)).toBe('https://example.com/overlay')
 })
+
+test('full-size logo with translucent mixture still scans', async ({ page }) => {
+  await fillUrl(page, 'https://example.com/translucent')
+  await page.getByLabel('Logo', { exact: true }).setInputFiles(fixture('logo.svg'))
+  await page.getByLabel('Logo placement').selectOption('full')
+  await page.getByLabel('Mixture mode').selectOption('translucent')
+  await expect(preview(page)).toBeVisible()
+  expect(await decodePng(page)).toBe('https://example.com/translucent')
+})

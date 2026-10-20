@@ -37,11 +37,13 @@ function renderXorSvg(m: QrMatrix, logo: string, bg: string, px: number): string
   )
 }
 
-// Overlay mode: the styled code (with its quiet zone and background) sits on the middle 2/3 of the full-size logo.
-function renderOverlaySvg(m: QrMatrix, style: RenderStyle, logo: string, bg: string, px: number): string {
+// Overlay and translucent modes: the styled code (with its quiet zone and background) sits on the middle 2/3 of the full-size logo.
+function renderOverlaySvg(m: QrMatrix, style: RenderStyle, logo: string, bg: string, px: number, bgOpacity: number): string {
   const code = m.size + 2 * QUIET_ZONE
   const total = code * 3
-  const inner = renderSvg(m, { ...style, logo: null, size: code * 2 }).replace('<svg ', `<svg x="${code / 2}" y="${code / 2}" `)
+  const inner = renderSvg(m, { ...style, logo: null, size: code * 2 })
+    .replace('<svg ', `<svg x="${code / 2}" y="${code / 2}" `)
+    .replace(`fill="${bg}"/>`, `fill="${bg}" fill-opacity="${bgOpacity}"/>`)
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${px}" height="${px}" viewBox="0 0 ${total} ${total}">` +
     `<rect width="${total}" height="${total}" fill="${bg}"/>` +
@@ -59,7 +61,7 @@ export function renderSvg(m: QrMatrix, style: RenderStyle): string {
 
   const logo = style.logo && LOGO_RE.test(style.logo) ? style.logo : null
   if (logo && style.logoPlacement === 'full') {
-    return style.mixMode === 'xor' ? renderXorSvg(m, logo, bg, px) : renderOverlaySvg(m, style, logo, bg, px)
+    return style.mixMode === 'xor' ? renderXorSvg(m, logo, bg, px) : renderOverlaySvg(m, style, logo, bg, px, style.mixMode === 'translucent' ? 0.5 : 1)
   }
 
   const bundledDot = style.dotShape === 'custom' ? 'square' : style.dotShape

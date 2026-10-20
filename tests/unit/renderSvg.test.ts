@@ -155,4 +155,11 @@ describe('renderSvg full-size logo', () => {
     expect(svg).not.toContain('qrb-xor-mask')
     expect([...svg.matchAll(/<image /g)]).toHaveLength(1)
   })
+
+  it('translucent mode makes only the code background 50% transparent', () => {
+    const svg = renderSvg(m, { ...base(), bg: '#eeeeee', logo, logoPlacement: 'full', mixMode: 'translucent' })
+    expect(svg).toContain('fill="#eeeeee" fill-opacity="0.5"/>')
+    expect(svg.match(/fill-opacity/g)).toHaveLength(1)
+    expect(renderSvg(m, { ...base(), logo, logoPlacement: 'full', mixMode: 'overlay' })).toContain('fill-opacity="1"')
+  })
 })

@@ -10,3 +10,4 @@
 
 ## 2026-10-20
 - Split the logo option into Logo placement (center / full size) and Mixture mode (overlay / XOR); added overlay mode.
+- Added the Translucent mixture mode (code background 50% transparent over the full-size logo).
