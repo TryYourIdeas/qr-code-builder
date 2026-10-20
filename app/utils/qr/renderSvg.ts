@@ -37,6 +37,8 @@ function renderXorSvg(m: QrMatrix, logo: string, bg: string, px: number): string
   )
 }
 
+const BG_OPACITY = { overlay: 1, translucent: 0.7, faded: 0.9 } as const
+
 // Overlay, translucent and faded modes: the styled code (with its quiet zone and background) sits on the middle 2/3 of the full-size logo.
 function renderOverlaySvg(m: QrMatrix, style: RenderStyle, logo: string, bg: string, px: number, bgOpacity: number, knockout: boolean): string {
   const code = m.size + 2 * QUIET_ZONE
@@ -62,7 +64,7 @@ export function renderSvg(m: QrMatrix, style: RenderStyle, knockout = false): st
 
   const logo = style.logo && LOGO_RE.test(style.logo) ? style.logo : null
   if (logo && style.logoPlacement === 'full') {
-    return style.mixMode === 'xor' ? renderXorSvg(m, logo, bg, px) : renderOverlaySvg(m, style, logo, bg, px, style.mixMode === 'overlay' ? 1 : 0.7, style.mixMode === 'faded')
+    return style.mixMode === 'xor' ? renderXorSvg(m, logo, bg, px) : renderOverlaySvg(m, style, logo, bg, px, BG_OPACITY[style.mixMode], style.mixMode === 'faded')
   }
 
   const bundledDot = style.dotShape === 'custom' ? 'square' : style.dotShape

@@ -163,10 +163,10 @@ describe('renderSvg full-size logo', () => {
     expect(renderSvg(m, { ...base(), logo, logoPlacement: 'full', mixMode: 'overlay' })).toContain('fill-opacity="1"')
   })
 
-  it('faded mode cuts the dark modules and eyes out of a 30% transparent background', () => {
+  it('faded mode cuts the dark modules and eyes out of a 10% transparent background', () => {
     const svg = renderSvg(m, { ...base(), bg: '#eeeeee', logo, logoPlacement: 'full', mixMode: 'faded' })
     expect(svg).toContain('<rect mask="url(#qrb-hole)" width=')
-    expect(svg).toContain('fill="#eeeeee" fill-opacity="0.7"/>')
+    expect(svg).toContain('fill="#eeeeee" fill-opacity="0.9"/>')
     const mask = svg.match(/<mask id="qrb-hole".*?<\/mask>/)![0]
     expect(mask).toContain('<g filter="url(#qrb-black)">')
     expect([...mask.matchAll(/<use xlink:href="#qrb-dot"/g)].length).toBeGreaterThan(0)

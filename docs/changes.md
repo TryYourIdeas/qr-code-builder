@@ -13,4 +13,4 @@
 - Added the Translucent mixture mode (code background 30% transparent, i.e. 70% opaque, over the full-size logo).
 
 ## 2026-10-21
-- Added the Faded mixture mode (code background 30% transparent, dark modules and eyes cut out so the logo shows through them).
+- Added the Faded mixture mode (code background 10% transparent, dark modules and eyes cut out so the logo shows through them).

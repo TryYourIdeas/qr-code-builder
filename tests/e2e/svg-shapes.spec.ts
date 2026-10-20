@@ -135,7 +135,7 @@ test('faded mixture renders and warns that the see-through code may not scan', a
   await page.getByLabel('Mixture mode').selectOption('faded')
   await expect(preview(page)).toBeVisible()
   await expect(page.getByText(/may not scan reliably/i)).toBeVisible()
-  // logo is #f4f1de; the white code background is 70% opaque over it, the dark modules are holes down to the logo
+  // logo is #f4f1de; the white code background is 90% opaque over it, the dark modules are holes down to the logo
   const png = PNG.sync.read(readFileSync(await download(page, 'Download PNG')))
   const near = (i: number, rgb: number[]) => rgb.every((v, k) => Math.abs(png.data[i + k]! - v) <= 2)
   let logoPx = 0
@@ -146,7 +146,7 @@ test('faded mixture renders and warns that the see-through code may not scan', a
     for (let x = lo; x < hi; x++) {
       const i = (y * png.width + x) * 4
       if (near(i, [244, 241, 222])) logoPx++
-      else if (near(i, [252, 251, 245])) panelPx++
+      else if (near(i, [254, 254, 252])) panelPx++
     }
   }
   expect(logoPx).toBeGreaterThan(500)
