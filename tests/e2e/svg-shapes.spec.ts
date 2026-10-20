@@ -101,3 +101,29 @@ test('a dense code with custom tiles still renders', async ({ page }) => {
   await expect(preview(page)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Download PNG' })).toBeEnabled()
 })
+
+test('XOR logo mode fills the image with the logo and still scans', async ({ page }) => {
+  await fillUrl(page, 'https://example.com/xor')
+  await page.getByLabel('Logo', { exact: true }).setInputFiles(fixture('logo.svg'))
+  await page.getByLabel('Logo placement').selectOption('full')
+  await page.getByLabel('Mixture mode').selectOption('xor')
+  await expect(preview(page)).toBeVisible()
+  expect(await decodePng(page)).toBe('https://example.com/xor')
+})
+
+test('full-size logo with overlay mixture still scans', async ({ page }) => {
+  await fillUrl(page, 'https://example.com/overlay')
+  await page.getByLabel('Logo', { exact: true }).setInputFiles(fixture('logo.svg'))
+  await page.getByLabel('Logo placement').selectOption('full')
+  await expect(preview(page)).toBeVisible()
+  expect(await decodePng(page)).toBe('https://example.com/overlay')
+})
+
+test('full-size logo with translucent mixture still scans', async ({ page }) => {
+  await fillUrl(page, 'https://example.com/translucent')
+  await page.getByLabel('Logo', { exact: true }).setInputFiles(fixture('logo.svg'))
+  await page.getByLabel('Logo placement').selectOption('full')
+  await page.getByLabel('Mixture mode').selectOption('translucent')
+  await expect(preview(page)).toBeVisible()
+  expect(await decodePng(page)).toBe('https://example.com/translucent')
+})

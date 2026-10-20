@@ -2,6 +2,8 @@ import type { DotShape, EyeShape } from '~/utils/qr/shapes'
 import type { SanitizedSvg } from '~/utils/qr/sanitizeSvg'
 
 export type ErrorLevel = 'L' | 'M' | 'Q' | 'H'
+export type LogoPlacement = 'center' | 'full'
+export type MixMode = 'overlay' | 'translucent' | 'xor'
 
 export interface StyleState {
   fg: string
@@ -13,6 +15,8 @@ export interface StyleState {
   size: number
   errorLevel: ErrorLevel
   logo: string | null
+  logoPlacement: LogoPlacement
+  mixMode: MixMode
 }
 
 export const defaultStyle = (): StyleState => ({
@@ -25,4 +29,6 @@ export const defaultStyle = (): StyleState => ({
   size: 300,
   errorLevel: 'M',
   logo: null,
+  logoPlacement: 'center',
+  mixMode: 'overlay',
 })

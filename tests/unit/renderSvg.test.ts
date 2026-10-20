@@ -113,3 +113,53 @@ describe('renderSvg dense codes', () => {
     expect(dotUses(svg).length).toBeGreaterThan(1000)
   })
 })
+
+describe('renderSvg full-size logo', () => {
+  const logo = 'data:image/png;base64,AAAA'
+  const xor = () => renderSvg(m, { ...base(), logo, logoPlacement: 'full', mixMode: 'xor' })
+
+  it('fills the canvas with the logo and inverts it through a mask of the dark modules', () => {
+    const svg = xor()
+    const total = n * 6
+    expect(svg).toContain(`viewBox="0 0 ${total} ${total}"`)
+    expect(svg).toContain(`<image xlink:href="${logo}" width="${total}" height="${total}"`)
+    expect(svg).toContain('<feColorMatrix type="matrix" values="-1 0 0 0 1 0 -1 0 0 1 0 0 -1 0 1 0 0 0 1 0"/>')
+    expect(svg).toContain('filter="url(#qrb-invert)" mask="url(#qrb-xor-mask)"')
+  })
+
+  it('places the QR on the middle two thirds, one square per dark module including the eyes', () => {
+    const svg = xor()
+    const cells = [...svg.matchAll(/M(\d+) (\d+)h4v4h-4z/g)].map((x) => [Number(x[1]), Number(x[2])])
+    let dark = 0
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (m.isDark(r, c)) dark++
+    expect(cells).toHaveLength(dark)
+    expect(Math.min(...cells.flat())).toBe(n)
+    expect(Math.max(...cells.flat()) + 4).toBe(5 * n)
+  })
+
+  it('falls back to the plain code without a valid logo', () => {
+    expect(renderSvg(m, { ...base(), logoPlacement: 'full', mixMode: 'xor' })).not.toContain('qrb-xor-mask')
+    expect(renderSvg(m, { ...base(), logo: 'http://evil.example/x.png', logoPlacement: 'full', mixMode: 'xor' })).not.toMatch(/evil|<image/)
+  })
+
+  it('keeps the centered mode by default', () => {
+    expect(renderSvg(m, { ...base(), logo })).not.toContain('qrb-xor-mask')
+  })
+
+  it('overlay mode draws the styled code on the middle two thirds of the logo', () => {
+    const svg = renderSvg(m, { ...base(), logo, logoPlacement: 'full', mixMode: 'overlay' })
+    const code = n + 2 * q
+    expect(svg).toContain(`viewBox="0 0 ${code * 3} ${code * 3}"`)
+    expect(svg).toContain(`<svg x="${code / 2}" y="${code / 2}" xmlns`)
+    expect(svg).toContain(`width="${code * 2}" height="${code * 2}" viewBox="0 0 ${code} ${code}"`)
+    expect(svg).not.toContain('qrb-xor-mask')
+    expect([...svg.matchAll(/<image /g)]).toHaveLength(1)
+  })
+
+  it('translucent mode makes only the code background 30% transparent', () => {
+    const svg = renderSvg(m, { ...base(), bg: '#eeeeee', logo, logoPlacement: 'full', mixMode: 'translucent' })
+    expect(svg).toContain('fill="#eeeeee" fill-opacity="0.7"/>')
+    expect(svg.match(/fill-opacity/g)).toHaveLength(1)
+    expect(renderSvg(m, { ...base(), logo, logoPlacement: 'full', mixMode: 'overlay' })).toContain('fill-opacity="1"')
+  })
+})
