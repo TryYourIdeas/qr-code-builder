@@ -195,6 +195,7 @@ const labelCls = 'block text-sm font-medium text-slate-800'
         <select id="style-mix-mode" v-model="style.mixMode" :class="field" aria-describedby="style-mix-mode-hint">
           <option value="overlay">Overlay (code on its own background)</option>
           <option value="translucent">Translucent (background 30% transparent)</option>
+          <option value="faded">Faded (background 30%, code 80% transparent)</option>
           <option value="xor">XOR (invert logo colors under dark modules)</option>
         </select>
         <p id="style-mix-mode-hint" class="mt-1 text-xs text-slate-600">
@@ -202,7 +203,9 @@ const labelCls = 'block text-sm font-medium text-slate-800'
             ? 'Works best with high-contrast logos; dot/eye shapes and colors are ignored.'
             : style.mixMode === 'translucent'
               ? 'The code background is 30% transparent so the logo shows through; use a light logo behind a dark code.'
-              : 'The styled code is drawn on top of the logo, with its quiet zone and background color.' }}
+              : style.mixMode === 'faded'
+                ? 'Both the code background (30%) and the dark modules (80%) are transparent; this blends most with the logo but is the hardest to scan.'
+                : 'The styled code is drawn on top of the logo, with its quiet zone and background color.' }}
         </p>
       </div>
     </div>

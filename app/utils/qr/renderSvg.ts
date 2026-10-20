@@ -37,11 +37,11 @@ function renderXorSvg(m: QrMatrix, logo: string, bg: string, px: number): string
   )
 }
 
-// Overlay and translucent modes: the styled code (with its quiet zone and background) sits on the middle 2/3 of the full-size logo.
-function renderOverlaySvg(m: QrMatrix, style: RenderStyle, logo: string, bg: string, px: number, bgOpacity: number): string {
+// Overlay, translucent and faded modes: the styled code (with its quiet zone and background) sits on the middle 2/3 of the full-size logo.
+function renderOverlaySvg(m: QrMatrix, style: RenderStyle, logo: string, bg: string, px: number, bgOpacity: number, fgOpacity: number): string {
   const code = m.size + 2 * QUIET_ZONE
   const total = code * 3
-  const inner = renderSvg(m, { ...style, logo: null, size: code * 2 })
+  const inner = renderSvg(m, { ...style, logo: null, size: code * 2 }, fgOpacity)
     .replace('<svg ', `<svg x="${code / 2}" y="${code / 2}" `)
     .replace(`fill="${bg}"/>`, `fill="${bg}" fill-opacity="${bgOpacity}"/>`)
   return (
@@ -51,7 +51,8 @@ function renderOverlaySvg(m: QrMatrix, style: RenderStyle, logo: string, bg: str
   )
 }
 
-export function renderSvg(m: QrMatrix, style: RenderStyle): string {
+// codeOpacity fades the dark modules and eyes as one unit (the background is not affected).
+export function renderSvg(m: QrMatrix, style: RenderStyle, codeOpacity = 1): string {
   const n = m.size
   const q = QUIET_ZONE
   const total = n + 2 * q
@@ -61,7 +62,7 @@ export function renderSvg(m: QrMatrix, style: RenderStyle): string {
 
   const logo = style.logo && LOGO_RE.test(style.logo) ? style.logo : null
   if (logo && style.logoPlacement === 'full') {
-    return style.mixMode === 'xor' ? renderXorSvg(m, logo, bg, px) : renderOverlaySvg(m, style, logo, bg, px, style.mixMode === 'translucent' ? 0.7 : 1)
+    return style.mixMode === 'xor' ? renderXorSvg(m, logo, bg, px) : renderOverlaySvg(m, style, logo, bg, px, style.mixMode === 'overlay' ? 1 : 0.7, style.mixMode === 'faded' ? 0.2 : 1)
   }
 
   const bundledDot = style.dotShape === 'custom' ? 'square' : style.dotShape
@@ -108,6 +109,6 @@ export function renderSvg(m: QrMatrix, style: RenderStyle): string {
     `<defs><symbol id="qrb-dot" viewBox="${esc(dot.viewBox)}">${dot.inner}</symbol>` +
     `<symbol id="qrb-eye" viewBox="${esc(eye.viewBox)}">${eye.inner}</symbol></defs>` +
     `<rect width="${total}" height="${total}" fill="${bg}"/>` +
-    `<g${crisp}>${uses.join('')}</g>${eyes.join('')}${logoMarkup}</svg>`
+    `<g${codeOpacity < 1 ? ` opacity="${codeOpacity}"` : ''}><g${crisp}>${uses.join('')}</g>${eyes.join('')}</g>${logoMarkup}</svg>`
   )
 }

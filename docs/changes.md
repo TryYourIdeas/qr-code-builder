@@ -11,3 +11,6 @@
 ## 2026-10-20
 - Split the logo option into Logo placement (center / full size) and Mixture mode (overlay / XOR); added overlay mode.
 - Added the Translucent mixture mode (code background 30% transparent, i.e. 70% opaque, over the full-size logo).
+
+## 2026-10-21
+- Added the Faded mixture mode (code background 30% transparent, dark modules and eyes 80% transparent).

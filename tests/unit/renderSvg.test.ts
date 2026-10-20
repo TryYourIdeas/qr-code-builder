@@ -162,4 +162,11 @@ describe('renderSvg full-size logo', () => {
     expect(svg.match(/fill-opacity/g)).toHaveLength(1)
     expect(renderSvg(m, { ...base(), logo, logoPlacement: 'full', mixMode: 'overlay' })).toContain('fill-opacity="1"')
   })
+
+  it('faded mode makes the background 30% and the dark modules and eyes 80% transparent', () => {
+    const svg = renderSvg(m, { ...base(), bg: '#eeeeee', logo, logoPlacement: 'full', mixMode: 'faded' })
+    expect(svg).toContain('fill="#eeeeee" fill-opacity="0.7"/>')
+    expect(svg).toMatch(/<g opacity="0.2"><g[^>]*>(<use xlink:href="#qrb-dot"[^>]*\/>)+<\/g>(<use xlink:href="#qrb-eye"[^>]*\/>){3}<\/g>/)
+    expect(renderSvg(m, { ...base(), logo, logoPlacement: 'full', mixMode: 'translucent' })).not.toContain('opacity="0.2"')
+  })
 })
