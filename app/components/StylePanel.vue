@@ -195,7 +195,7 @@ const labelCls = 'block text-sm font-medium text-slate-800'
         <select id="style-mix-mode" v-model="style.mixMode" :class="field" aria-describedby="style-mix-mode-hint">
           <option value="overlay">Overlay (code on its own background)</option>
           <option value="translucent">Translucent (background 30% transparent)</option>
-          <option value="faded">Faded (background 30%, code 100% transparent)</option>
+          <option value="faded">Faded (background 30% transparent, code see-through)</option>
           <option value="xor">XOR (invert logo colors under dark modules)</option>
         </select>
         <p id="style-mix-mode-hint" class="mt-1 text-xs text-slate-600">
@@ -204,7 +204,7 @@ const labelCls = 'block text-sm font-medium text-slate-800'
             : style.mixMode === 'translucent'
               ? 'The code background is 30% transparent so the logo shows through; use a light logo behind a dark code.'
               : style.mixMode === 'faded'
-                ? 'Both the code background (30%) and the dark modules (100%) are transparent, so the code itself is invisible and cannot be scanned.'
+                ? 'The code background is 30% transparent and the dark modules are cut out of it, so the logo shows fully through them. Scanners usually cannot read this.'
                 : 'The styled code is drawn on top of the logo, with its quiet zone and background color.' }}
         </p>
       </div>

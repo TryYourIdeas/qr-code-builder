@@ -38,10 +38,10 @@ function renderXorSvg(m: QrMatrix, logo: string, bg: string, px: number): string
 }
 
 // Overlay, translucent and faded modes: the styled code (with its quiet zone and background) sits on the middle 2/3 of the full-size logo.
-function renderOverlaySvg(m: QrMatrix, style: RenderStyle, logo: string, bg: string, px: number, bgOpacity: number, fgOpacity: number): string {
+function renderOverlaySvg(m: QrMatrix, style: RenderStyle, logo: string, bg: string, px: number, bgOpacity: number, knockout: boolean): string {
   const code = m.size + 2 * QUIET_ZONE
   const total = code * 3
-  const inner = renderSvg(m, { ...style, logo: null, size: code * 2 }, fgOpacity)
+  const inner = renderSvg(m, { ...style, logo: null, size: code * 2 }, knockout)
     .replace('<svg ', `<svg x="${code / 2}" y="${code / 2}" `)
     .replace(`fill="${bg}"/>`, `fill="${bg}" fill-opacity="${bgOpacity}"/>`)
   return (
@@ -51,8 +51,8 @@ function renderOverlaySvg(m: QrMatrix, style: RenderStyle, logo: string, bg: str
   )
 }
 
-// codeOpacity fades the dark modules and eyes as one unit (the background is not affected).
-export function renderSvg(m: QrMatrix, style: RenderStyle, codeOpacity = 1): string {
+// knockout cuts the dark modules and eyes out of the background, so whatever lies behind the image shows through them.
+export function renderSvg(m: QrMatrix, style: RenderStyle, knockout = false): string {
   const n = m.size
   const q = QUIET_ZONE
   const total = n + 2 * q
@@ -62,7 +62,7 @@ export function renderSvg(m: QrMatrix, style: RenderStyle, codeOpacity = 1): str
 
   const logo = style.logo && LOGO_RE.test(style.logo) ? style.logo : null
   if (logo && style.logoPlacement === 'full') {
-    return style.mixMode === 'xor' ? renderXorSvg(m, logo, bg, px) : renderOverlaySvg(m, style, logo, bg, px, style.mixMode === 'overlay' ? 1 : 0.7, style.mixMode === 'faded' ? 0 : 1)
+    return style.mixMode === 'xor' ? renderXorSvg(m, logo, bg, px) : renderOverlaySvg(m, style, logo, bg, px, style.mixMode === 'overlay' ? 1 : 0.7, style.mixMode === 'faded')
   }
 
   const bundledDot = style.dotShape === 'custom' ? 'square' : style.dotShape
@@ -104,11 +104,17 @@ export function renderSvg(m: QrMatrix, style: RenderStyle, codeOpacity = 1): str
     ? `<image xlink:href="${esc(logo)}" x="${q + (n - logoSide) / 2}" y="${q + (n - logoSide) / 2}" width="${logoSide}" height="${logoSide}" preserveAspectRatio="xMidYMid meet"/>`
     : ''
 
+  const code = `<g${crisp}>${uses.join('')}</g>${eyes.join('')}`
+  // the code, painted black, is subtracted from the background; the filter keeps only its alpha
+  const hole =
+    `<filter id="qrb-black" filterUnits="userSpaceOnUse" x="0" y="0" width="${total}" height="${total}"><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0"/></filter>` +
+    `<mask id="qrb-hole" maskUnits="userSpaceOnUse" x="0" y="0" width="${total}" height="${total}"><rect width="${total}" height="${total}" fill="#fff"/><g filter="url(#qrb-black)">${code}</g></mask>`
+
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${px}" height="${px}" viewBox="0 0 ${total} ${total}">` +
     `<defs><symbol id="qrb-dot" viewBox="${esc(dot.viewBox)}">${dot.inner}</symbol>` +
-    `<symbol id="qrb-eye" viewBox="${esc(eye.viewBox)}">${eye.inner}</symbol></defs>` +
-    `<rect width="${total}" height="${total}" fill="${bg}"/>` +
-    `<g${codeOpacity < 1 ? ` opacity="${codeOpacity}"` : ''}><g${crisp}>${uses.join('')}</g>${eyes.join('')}</g>${logoMarkup}</svg>`
+    `<symbol id="qrb-eye" viewBox="${esc(eye.viewBox)}">${eye.inner}</symbol>${knockout ? hole : ''}</defs>` +
+    `<rect${knockout ? ' mask="url(#qrb-hole)"' : ''} width="${total}" height="${total}" fill="${bg}"/>` +
+    `${knockout ? '' : code}${logoMarkup}</svg>`
   )
 }
