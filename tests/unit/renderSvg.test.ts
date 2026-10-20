@@ -162,4 +162,17 @@ describe('renderSvg full-size logo', () => {
     expect(svg.match(/fill-opacity/g)).toHaveLength(1)
     expect(renderSvg(m, { ...base(), logo, logoPlacement: 'full', mixMode: 'overlay' })).toContain('fill-opacity="1"')
   })
+
+  it('faded mode cuts the dark modules and eyes out of a 10% transparent background', () => {
+    const svg = renderSvg(m, { ...base(), bg: '#eeeeee', logo, logoPlacement: 'full', mixMode: 'faded' })
+    expect(svg).toContain('<rect mask="url(#qrb-hole)" width=')
+    expect(svg).toContain('fill="#eeeeee" fill-opacity="0.9"/>')
+    const mask = svg.match(/<mask id="qrb-hole".*?<\/mask>/)![0]
+    expect(mask).toContain('<g filter="url(#qrb-black)">')
+    expect([...mask.matchAll(/<use xlink:href="#qrb-dot"/g)].length).toBeGreaterThan(0)
+    expect([...mask.matchAll(/<use xlink:href="#qrb-eye"/g)]).toHaveLength(3)
+    // nothing is painted over the background any more
+    expect(svg.replace(/<defs>.*<\/defs>/, '')).not.toContain('<use')
+    expect(renderSvg(m, { ...base(), logo, logoPlacement: 'full', mixMode: 'translucent' })).not.toContain('qrb-hole')
+  })
 })

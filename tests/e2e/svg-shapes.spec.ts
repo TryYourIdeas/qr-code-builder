@@ -127,3 +127,28 @@ test('full-size logo with translucent mixture still scans', async ({ page }) => 
   await expect(preview(page)).toBeVisible()
   expect(await decodePng(page)).toBe('https://example.com/translucent')
 })
+
+test('faded mixture renders and warns that the see-through code may not scan', async ({ page }) => {
+  await fillUrl(page, 'https://example.com/faded')
+  await page.getByLabel('Logo', { exact: true }).setInputFiles(fixture('logo.svg'))
+  await page.getByLabel('Logo placement').selectOption('full')
+  await page.getByLabel('Mixture mode').selectOption('faded')
+  await expect(preview(page)).toBeVisible()
+  await expect(page.getByText(/may not scan reliably/i)).toBeVisible()
+  // logo is #f4f1de; the white code background is 90% opaque over it, the dark modules are holes down to the logo
+  const png = PNG.sync.read(readFileSync(await download(page, 'Download PNG')))
+  const near = (i: number, rgb: number[]) => rgb.every((v, k) => Math.abs(png.data[i + k]! - v) <= 2)
+  let logoPx = 0
+  let panelPx = 0
+  const lo = Math.floor(png.width / 3) + 4
+  const hi = Math.floor((png.width * 2) / 3) - 4
+  for (let y = lo; y < hi; y++) {
+    for (let x = lo; x < hi; x++) {
+      const i = (y * png.width + x) * 4
+      if (near(i, [244, 241, 222])) logoPx++
+      else if (near(i, [254, 254, 252])) panelPx++
+    }
+  }
+  expect(logoPx).toBeGreaterThan(500)
+  expect(panelPx).toBeGreaterThan(500)
+})

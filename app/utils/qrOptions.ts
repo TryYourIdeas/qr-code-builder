@@ -3,7 +3,7 @@ import type { SanitizedSvg } from '~/utils/qr/sanitizeSvg'
 
 export type ErrorLevel = 'L' | 'M' | 'Q' | 'H'
 export type LogoPlacement = 'center' | 'full'
-export type MixMode = 'overlay' | 'translucent' | 'xor'
+export type MixMode = 'overlay' | 'translucent' | 'faded' | 'xor'
 
 export interface StyleState {
   fg: string
